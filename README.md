@@ -85,6 +85,11 @@ html
 </code></pre>
 json 객체의 key로 값을 전달할 수 있으며, '-'를 사용하여 javascript로직 추가 가능
 
+5. 쿼리스트링<br>
+localhost:3000/topic?id=0 와 같은 url이 있을 때, ?id=0 부분을 쿼리스트링이라고 한다.<br>
+쿼리스트링에 의해 전달된 parameter(id)는 req.query 객체로부터 가져올 수 있다.(let id = req.query.id)<br>
+
+
 
 # Array Sorting
 1. 기본 sorting 예제<pre><code>
