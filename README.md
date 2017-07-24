@@ -97,6 +97,17 @@ app.get('/topic/:id/:mode', (req, res) => {
   });</code></pre>
 위와 같이 코드를 입력한 뒤, localhost:3000/topic/1/write 로 요청하면 "1, write"로 응답한다.
 
+7. GET/POST<br>
+get 방식으로 form 태그 정보를 submit 한 경우, 쿼리스트링으로 데이터를 전달받는다.<br>
+post 방식으로 form 태그 정보를 submit 한 경우, req.body 객체를 통해 데이터를 전달받는다.<br>
+req.body 객체를 사용하기 위해서는 body-parser 모듈을 추가한 뒤, body-parser 미들웨어를 사용해야 한다.<br><pre><code>
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({extended: false}));
+</code></pre>
+저렇게 미들웨어를 추가하면, 내부적으로 post 방식 url 컨트롤러로 라우팅하기 전에<br>
+body 를 파싱하여 req.body 객체에 properties 를 설정한다.
+
+
 
 # Array Sorting
 1. 기본 sorting 예제<pre><code>
