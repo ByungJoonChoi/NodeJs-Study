@@ -25,6 +25,24 @@
 }</code></pre>
 위와 같이 입력한 뒤, 콘솔에서 $>npm start라고 입력하면 $>node hello.js를 입력한 것과 같은 효과를 낸다.
 
+# Express 
+1. Express란? NodeJs 웹 어플리케이션 프레임워크
+<br>Express모듈을 추가하여 개발하면, 쉽고 빠르게 웹 어플리케이션을 구현할 수 있다.
+
+2. 라우터
+<br>라우터를 이용하면 사용자 요청을 쉽게 파싱하여 해당 요청 컨트롤러에 연결해줄 수 있다.<pre><code>
+app.get('/', (req, res) => {
+  res.send('Welcome!!!');
+});
+app.get('/login', (req, res) =>{
+  res.send('Please, Login!!');
+});
+</pre></code>위와 같이 작성하면, localhost:3000/ 요청에 'Welcome!!!'을 응답하고, 
+<br>localhost:3000/login 요청에 'Please, Login!!'을 응답한다.
+<br>post방식의 요청을 파싱하기 위해서는 app.post({path}, {function}) 형태로 작성하면 된다.
+
+
+
 # Array Sorting
 1. 기본 sorting 예제<pre><code>
 a = [6,1,4,5,2,3]; a.sort();
@@ -38,3 +56,5 @@ a = [6,1,4,5,2,3]; a.sort(function(a,b){return b-a});
 3. 람다식 이용하여 내림차순 정렬해보기<pre><code>
 a = [6,1,4,5,2,3]; a.sort((a,b) => (b-a));
 </pre></code>결과 : [ 6, 5, 4, 3, 2, 1 ]
+
+
