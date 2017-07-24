@@ -89,6 +89,13 @@ json 객체의 key로 값을 전달할 수 있으며, '-'를 사용하여 javasc
 localhost:3000/topic?id=0 와 같은 url이 있을 때, ?id=0 부분을 쿼리스트링이라고 한다.<br>
 쿼리스트링에 의해 전달된 parameter(id)는 req.query 객체로부터 가져올 수 있다.(let id = req.query.id)<br>
 
+6. semantic url<br>
+localhost:3000/topic/1과 같이 쿼리스트링을 쓰지 않고 사용하는 url을 semantic url이라고 한다.<br>
+라우터를 설정할 때 path를 파라미터 변수로 설정할 수 있다.<br><pre><code>
+app.get('/topic/:id/:mode', (req, res) => {
+  res.send(req.params.id + ", " + req.params.mode);
+  });</code></pre>
+위와 같이 코드를 입력한 뒤, localhost:3000/topic/1/write 로 요청하면 "1, write"로 응답한다.
 
 
 # Array Sorting
