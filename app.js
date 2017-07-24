@@ -26,6 +26,26 @@ app.get('/topic', (req, res) => {
   res.send(output);
 });
 
+app.get('/topic/:num', (req, res) => {
+  let id = req.params.num;
+  var topics = [
+    'Javascript is ...',
+    'Nodejs is ...',
+    'Express is ...'
+  ];
+  var output = `
+  <a href="/topic/0">JavaScript</a><br>
+  <a href="/topic/1">Nodejs</a><br>
+  <a href="/topic/2">Express</a><br>
+  ${topics[id]}
+  `
+  res.send(output);
+});
+
+app.get('/topic/:id/:mode', (req, res) => {
+  res.send(req.params.id + ", " + req.params.mode);
+});
+
 app.get('/template', (req, res) => {
   res.render('temp', {time: new Date().toLocaleString(), _title: "pug"});
 });
