@@ -24,3 +24,17 @@
     "start": "node hello.js"
 }</code></pre>
 위와 같이 입력한 뒤, 콘솔에서 $>npm start라고 입력하면 $>node hello.js를 입력한 것과 같은 효과를 낸다.
+
+# Array Sorting
+1. 기본 sorting 예제<pre><code>
+a = [6,1,4,5,2,3]; a.sort();
+</code></pre>결과 : [ 1, 2, 3, 4, 5, 6 ]
+<br> Array.sort() 는 기본적으로 오름차순 정렬
+
+2. 익명함수 이용하여 내림차순 정렬해보기<pre><code>
+a = [6,1,4,5,2,3]; a.sort(function(a,b){return b-a});
+</pre></code>결과 : [ 6, 5, 4, 3, 2, 1 ]
+
+3. 람다식 이용하여 내림차순 정렬해보기<pre><code>
+a = [6,1,4,5,2,3]; a.sort((a,b) => (b-a));
+</pre></code>결과 : [ 6, 5, 4, 3, 2, 1 ]
