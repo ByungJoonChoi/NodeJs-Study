@@ -72,7 +72,7 @@ app.get('/template', (req, res) => {
 템플릿엔진으로 작성된 html파일로 사용자 요청에 응답하려면 res.render() 메소드 호출<br>
 첫번째 인자('temp')는 ./views 폴더에 저장된 temp.pug 파일로, 확장자를 생략<br>
 두번째 인자로 json을 보낼 수 있으며, 해당 템플릿 엔진 파일에서 변수로 사용 가능.
-<pre><code>
+<br><br>4) 예제코드<pre><code>
 html
   head
     title= _title
@@ -81,7 +81,8 @@ html
     ul
       -for(var i=0; i<5; i++)
         li coding
-    div= time</pre></code>
+    div= time
+</code></pre>
 json 객체의 key로 값을 전달할 수 있으며, '-'를 사용하여 javascript로직 추가 가능 
 
 
