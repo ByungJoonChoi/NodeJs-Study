@@ -53,8 +53,36 @@ app.use(express.static('public'));
 app.use(express.static(__dirname + '/public'));
 </pre></code>
 
-
-
+4. 템플릿 엔진
+<br>템플릿 엔진을 사용하면 동적 웹페이지를 쉽게 작성할 수 있다.
+<br>Express에서 default로 사용하는 템플릿 엔진은 pug이다.(예전에 'jade'였는데 이름이 바뀜)
+<br><br>1) 설치
+<br>$ npm install pug --save
+<br><br>2) 설정<pre><code>
+app.set('view engine', 'pug');
+app.set('views', './views');</pre></code>
+첫째 줄은 템플릿 엔진으로 pug를 사용하겠다는 뜻.<br>
+두번째 줄은 템플릿 엔진 파일(.pug)을 ./views 폴더에 저장해 두겠다는 뜻.<br>
+두번째 줄은 생략 가능하며, 생략 시 view들의 폴더로 ./views 가 default로 설정됨.<br>
+(express.static으로 폴더 설정하는 것과 비슷하게, 별도의 경로지정 없이 ./views에 저장된 파일 인식)
+<br><br>3) 사용<pre><code>
+app.get('/template', (req, res) => {
+  res.render('temp', {time: new Date().toLocaleString(), _title: "pug"});
+});</pre></code>
+템플릿엔진으로 작성된 html파일로 사용자 요청에 응답하려면 res.render() 메소드 호출<br>
+첫번째 인자('temp')는 ./views 폴더에 저장된 temp.pug 파일로, 확장자를 생략<br>
+두번째 인자로 json을 보낼 수 있으며, 해당 템플릿 엔진 파일에서 변수로 사용 가능.
+<pre><code>
+html
+  head
+    title= _title
+  body
+    h1 Hello Pug!!
+    ul
+      -for(var i=0; i<5; i++)
+        li coding
+    div= time</pre></code>
+json 객체의 key로 값을 전달할 수 있으며, '-'를 사용하여 javascript로직 추가 가능 
 
 
 # Array Sorting
