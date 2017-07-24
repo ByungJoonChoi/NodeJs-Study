@@ -41,6 +41,20 @@ app.get('/login', (req, res) =>{
 <br>localhost:3000/login 요청에 'Please, Login!!'을 응답한다.
 <br>post방식의 요청을 파싱하기 위해서는 app.post({path}, {function}) 형태로 작성하면 된다.
 
+3. 정적파일 서비스
+<br>정적인 파일을 서비스하기 위해서는 아래와 같이 폴더를 지정해주고, 해당 폴더에 정적 파일들을 넣어두면 된다.<pre><code>
+app.use(express.static('public'));
+</pre></code>
+<br>위와 같이 설정해둔 상태에서 public폴더에 'totoro.jpg'파일을 저장해두면, 
+<br>웹브라우져에서 localhost:3000/totoro.jpg 로 해당 파일에 접근할 수 있다.
+<br><br>express.static()의 인자로 들어가는 경로는 node 프로세스가 실행되는 디렉토리에 대해 상대적이기 때문에
+<br>절대경로로 설정해주는 것이 좀 더 안전하다.
+<br>아래와 같이 설정하자.<pre><code>
+app.use(express.static(__dirname + '/public'));
+</pre></code>
+
+
+
 
 
 # Array Sorting
