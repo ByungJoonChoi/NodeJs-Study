@@ -1,10 +1,12 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const app = express();
 // app.use(express.static('public'));
 app.locals.pretty = true; // 페이지 소스 보기 할 때 이쁘게 보기!!
 app.set('view engine', 'pug');
 app.set('views', './views'); // 생략 가능
 app.use(express.static(__dirname + '/public'));
+app.use(bodyParser.urlencoded({extended: false}));
 
 app.get('/', (req, res) => {
   res.send('Welcome!!!');
@@ -24,6 +26,24 @@ app.get('/topic', (req, res) => {
   ${topics[id]}
   `
   res.send(output);
+});
+
+app.get('/form', (req, res) => {
+  res.render('form');
+})
+
+// form 태그를 "get" 방식으로 제출시, 쿼리스트링이 추가된 url을 만들어 요청함.
+app.get('/form_receiver', (req, res) => {
+  var title = req.query.title;
+  var description = req.query.description;
+  res.send(title + ", " + description);
+});
+
+// form 태그를 "post" 방식으로 제출시, post 라우터로 요청함.
+app.post('/form_receiver', (req, res) => {
+  var title = req.body.title;
+  var description = req.body.description;
+  res.send(title + ", " + description);
 });
 
 app.get('/topic/:num', (req, res) => {
