@@ -1,0 +1,22 @@
+{
+  "name": "nodejs_study",
+  "version": "1.0.0",
+  "description": "this package is for studying nodejs",
+  "main": "hello.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ByungJoonChoi/NodeJs-Study.git"
+  },
+  "author": "Peter Choi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ByungJoonChoi/NodeJs-Study/issues"
+  },
+  "homepage": "https://github.com/ByungJoonChoi/NodeJs-Study#readme",
+  "dependencies": {
+    "underscore": "^1.8.3"
+  }
+}
