@@ -21,7 +21,18 @@ app.post('/topic', (req, res) => {
     }
     res.send('Success!');
   });
-})
+});
+
+app.get('/topic', (req,res) => {
+  fs.readdir('data', (err,files) => {
+    if(err){
+      console.log(err);
+      res.status(500).send('Internal Server Error');
+    }
+    console.log(files);
+    res.render('view', {topics: files});
+  });
+});
 
 app.listen(3000, () => {
   console.log("Connected, 3000 port");
