@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const multer = require('multer');
 const app = express();
 const fs = require('fs');
 app.locals.pretty = true; // 페이지 소스 보기 할 때 이쁘게 보기!!
@@ -7,6 +8,13 @@ app.set('view engine', 'pug');
 app.set('views', './views_file');
 app.use(bodyParser.urlencoded({extended: false}));
 
+app.get('/upload', (req, res) => {
+  res.render('uploadform');
+});
+
+app.post('/upload', (req, res) => {
+  res.send("upload post");
+});
 app.get('/topic/new', (req,res) =>{
   fs.readdir('data', (err,files) => {
     if(err){
