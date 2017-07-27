@@ -8,7 +8,13 @@ app.set('views', './views_file');
 app.use(bodyParser.urlencoded({extended: false}));
 
 app.get('/topic/new', (req,res) =>{
-  res.render('new');
+  fs.readdir('data', (err,files) => {
+    if(err){
+      console.log(err);
+      res.status(500).send('Internal Server Error');
+    }
+    res.render('new', {topics:files});
+  });
 });
 
 app.post('/topic', (req, res) => {
@@ -19,18 +25,29 @@ app.post('/topic', (req, res) => {
       console.log(err);
       res.status(500).send('Internal Server Error');
     }
-    res.send('Success!');
+    res.redirect('/topic/' + title);
   });
 });
 
-app.get('/topic', (req,res) => {
+app.get(['/topic', '/topic/:topic'], (req,res) => {
   fs.readdir('data', (err,files) => {
     if(err){
       console.log(err);
       res.status(500).send('Internal Server Error');
     }
-    console.log(files);
-    res.render('view', {topics: files});
+    let topic = req.params.topic;
+    if(topic){
+      fs.readFile('data/' + topic, 'utf8' ,(err, data) => {
+        if(err){
+          console.log(err);
+          res.status(500).send('Internal Server Error');
+        }
+        console.log(data);
+        res.render('view', {topics: files, title: topic, description: data});
+      });
+    } else{
+      res.render('view', {topics: files, title: "Welcome", description: "Hello, JavaScript for server"});
+    }
   });
 });
 
