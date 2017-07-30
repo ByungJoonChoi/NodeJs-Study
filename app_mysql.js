@@ -56,48 +56,29 @@ app.post('/topic', (req, res) => {
   });
 });
 
-app.get(['/topic', '/topic/:topic'], (req,res) => {
-  let sql = 'SELECT * FROM topic';
-  conn.query(sql, function (err, rows, fields) {
+app.get(['/topic', '/topic/:id'], (req,res) => {
+  let sql = 'SELECT id, title FROM topic';
+  conn.query(sql, function (err, topics, fields) {
+    let id = req.params.id;
     if (err) {
       console.log(err);
       res.status(500).send('Internal Server Error');
       return;
     }
-    let topic = req.params.topic;
-    let topics = [];
-    let data;
-    for(let i=0; i<rows.length; i++){
-      topics.push(rows[i].title);
-      if(topic == rows[i].title)
-        data = rows[i].description;
-    }
-    if(topic){
-      res.render('view', {topics: topics, title: topic, description: data});
-    } else {
-      res.render('view', {topics: topics, title: "Welcome", description: "Hello, JavaScript for server"});
+    if(id){
+      let sql ='SELECT title, description, author FROM topic WHERE id=?';
+      conn.query(sql, [id], (err, rows, fields) => {
+        if(err){
+          console.log(err);
+          res.status(500).send('Internal Server Error');
+        } else {
+          res.render('view', {topics: topics, topic:rows[0]});
+        }
+      });
+    } else{
+        res.render('view', {topics: topics});
     }
   });
-
-  // fs.readdir('data', (err,files) => {
-  //   if(err){
-  //     console.log(err);
-  //     res.status(500).send('Internal Server Error');
-  //   }
-  //   let topic = req.params.topic;
-  //   if(topic){
-  //     fs.readFile('data/' + topic, 'utf8' ,(err, data) => {
-  //       if(err){
-  //         console.log(err);
-  //         res.status(500).send('Internal Server Error');
-  //       }
-  //       console.log(data);
-  //       res.render('view', {topics: files, title: topic, description: data});
-  //     });
-  //   } else{
-  //     res.render('view', {topics: files, title: "Welcome", description: "Hello, JavaScript for server"});
-    // }
-  // });
 });
 
 app.listen(3000, () => {

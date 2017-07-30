@@ -8,9 +8,15 @@ html
     ul
       each topic in topics
         li
-          a(href= '/topic/' + topic)= topic
+          a(href= '/topic/' + topic.id)= topic.title
     article
-      h2= title
-      = description
+      if(topic)
+        h2= topic.title
+        = topic.description
+        div= 'by ' + topic.author
+      else
+        h2 Welcome
+        | NodeJs tutorial
+        div by Peter
     div
       a(href='/topic/new') new
