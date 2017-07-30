@@ -160,11 +160,8 @@ app.post('/topic/:id/delete', (req, res) => {
       console.log(err);
       res.status(500).send('Internal Server Error');
     }
-
     res.redirect('/topic');
   });
-
-
 });
 
 app.listen(3000, () => {
