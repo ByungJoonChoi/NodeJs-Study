@@ -129,6 +129,41 @@ app.post('/topic/:id/edit', (req, res) => {
     }
     res.redirect('/topic/' + id);
   });
+});
+
+app.get('/topic/:id/delete', (req, res) => {
+  let sql = 'SELECT id, title FROM topic';
+  conn.query(sql, (err, topics, fields) => {
+    let id = req.params.id;
+    let sql = 'SELECT * FROM topic where id=?';
+    conn.query(sql, [id], (err, topic) => {
+      if(err){
+        console.log(err);
+        res.status(500).send('Internal Server Error');
+      } else{
+        if(topic.length === 0){
+          console.log("There is no data where id = " + id);
+          res.status(500).send('Internal Server Error');
+        } else {
+          res.render('delete', {topics:topics, topic:topic[0]});
+        }
+      }
+    });
+  });
+});
+
+app.post('/topic/:id/delete', (req, res) => {
+  let id = req.params.id;
+  let sql = "DELETE FROM topic where id=?"
+  conn.query(sql, [id], (err, result) => {
+    if(err){
+      console.log(err);
+      res.status(500).send('Internal Server Error');
+    }
+
+    res.redirect('/topic');
+  });
+
 
 });
 
