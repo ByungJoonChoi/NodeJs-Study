@@ -34,25 +34,31 @@ app.post('/upload', upload.single('userfile'), (req, res) => {
   res.send(req.file.filename);
 });
 
-app.get('/topic/new', (req,res) =>{
-  fs.readdir('data', (err,files) => {
-    if(err){
+app.get('/topic/add', (req,res) =>{
+  let sql = 'SELECT id, title FROM topic';
+  conn.query(sql, (err, topics, fields) => {
+    if (err) {
       console.log(err);
       res.status(500).send('Internal Server Error');
+      return;
     }
-    res.render('new', {topics:files});
+    res.render('add', {topics:topics});
   });
 });
 
-app.post('/topic', (req, res) => {
+app.post('/topic/add', (req, res) => {
   let title = req.body.title;
   let description = req.body.description;
-  fs.writeFile('data/'+title, description, 'utf8', (err)=>{
+  let author = req.body.author;
+  var sql = 'INSERT INTO topic (title, description, author) VALUES(?, ?, ?)';
+  var params = [title, description, author];
+  conn.query(sql, params, (err, result, fields) => {
     if(err){
       console.log(err);
       res.status(500).send('Internal Server Error');
+      return;
     }
-    res.redirect('/topic/' + title);
+    res.redirect('/topic/' + result.insertId);
   });
 });
 
