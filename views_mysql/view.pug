@@ -18,5 +18,9 @@ html
         h2 Welcome
         | NodeJs tutorial
         div by Peter
-    div
-      a(href='/topic/add') add
+    ul
+      li
+        a(href='/topic/add') add
+      if topic
+        li
+          a(href='/topic/' + topic.id +'/edit') edit

@@ -72,7 +72,7 @@ app.get(['/topic', '/topic/:id'], (req,res) => {
       return;
     }
     if(id){
-      let sql ='SELECT title, description, author FROM topic WHERE id=?';
+      let sql ='SELECT * FROM topic WHERE id=?';
       conn.query(sql, [id], (err, rows, fields) => {
         if(err){
           console.log(err);
@@ -85,6 +85,51 @@ app.get(['/topic', '/topic/:id'], (req,res) => {
         res.render('view', {topics: topics});
     }
   });
+});
+
+app.get('/topic/:id/edit', (req, res) => {
+  let id = req.params.id;
+  if(!id){
+    console.log("There is no id.");
+    res.status(500).send('Internal Server Error');
+    return;
+  }
+  let sql = 'SELECT id, title FROM topic';
+  conn.query(sql, (err, topics, fields) => {
+    if (err) {
+      console.log(err);
+      res.status(500).send('Internal Server Error');
+      return;
+    }
+    let sql ='SELECT * FROM topic WHERE id=?';
+    conn.query(sql, [id], (err, rows, fields) => {
+      if(err){
+        console.log(err);
+        res.status(500).send('Internal Server Error');
+      } else {
+        res.render('edit', {topics: topics, topic:rows[0]});
+      }
+    });
+  });
+});
+
+app.post('/topic/:id/edit', (req, res) => {
+  let id = req.params.id;
+  let title = req.body.title;
+  let description = req.body.description;
+  let author = req.body.author;
+
+  sql = 'UPDATE topic SET title=?, description=?, author=? WHERE id=?';
+  var params = [title, description, author, id];
+  conn.query(sql, params, (err, rows, fields) => {
+    if(err){
+      console.log(err);
+      res.status(500).send('Internal Server Error');
+      return;
+    }
+    res.redirect('/topic/' + id);
+  });
+
 });
 
 app.listen(3000, () => {
