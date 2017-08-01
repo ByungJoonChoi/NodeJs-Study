@@ -1,7 +1,7 @@
 const express = require('express');
 const cookieParser = require('cookie-parser')
 const app = express();
-app.use(cookieParser());
+app.use(cookieParser("3289urfh9302jf0348gh0gh"));
 
 var products = {
   1:{title:"스타크래프트 리마스터"},
@@ -26,8 +26,8 @@ cart {
 */
 app.get('/cart/:id', (req,res) => {
   let id = req.params.id;
-  if(req.cookies.cart){
-    var cart = req.cookies.cart;
+  if(req.signedCookies.cart){
+    var cart = req.signedCookies.cart;
   } else{
     cart = {};
   }
@@ -35,12 +35,12 @@ app.get('/cart/:id', (req,res) => {
     cart[id] = 0;
   }
   cart[id] = parseInt(cart[id]) + 1;
-  res.cookie('cart', cart);
+  res.cookie('cart', cart, {signed:true});
   res.redirect('/cart');
 });
 
 app.get('/cart', (req,res)=>{
-  let cart = req.cookies.cart;
+  let cart = req.signedCookies.cart;
   if(!cart){
     res.send("Empty cart!! You hava to buy something!!");
     return;
@@ -55,12 +55,12 @@ app.get('/cart', (req,res)=>{
 });
 
 app.get('/count', (req,res) => {
-  console.log('Cookies: ', req.cookies);
-  let count = parseInt(req.cookies.count);
+  console.log('Cookies: ', req.signedCookies);
+  let count = parseInt(req.signedCookies.count);
   if(!count)
     count = 0;
   count += 1;
-  res.cookie("count", count);
+  res.cookie("count", count, {signed:true});
   res.send("Count : " + count);
 });
 
