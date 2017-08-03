@@ -2,6 +2,7 @@ const express = require('express');
 const session = require('express-session')
 const FileStore = require('session-file-store')(session);
 const bodyParser = require('body-parser')
+const sha256 = require('sha256');
 const app = express();
 app.use(session({
   secret: 'kdasjf093j9qf03jf',
@@ -33,17 +34,28 @@ app.get('/auth/login', (req, res) => {
 let users = [
   {
     username:'peter',
-    password:'9999',
-    displayName:'BJ Choi'
+    password:'9e50affe4d3889511e99311a3f432eb1b788c21e019b760f0fd7f6fd67839045',
+    displayName:'BJ Choi',
+    salt:"(*&^%$#@!~!@#$%^&*()_+)"
   }
 ];
+
+function makeSalt(){
+  let salt = "";
+  let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()_+-=";
+
+  for (let i = 0; i < 30; i++)
+    salt += letters.charAt(Math.floor(Math.random() * letters.length));
+
+  return salt;
+}
 
 app.post('/auth/login', (req, res) => {
   let uname = req.body.username;
   let pwd = req.body.password;
   for(let i=0 ; i<users.length; i++){
     let user = users[i];
-    if(user.username === uname && user.password === pwd){
+    if(user.username === uname && user.password === sha256(pwd+user.salt)){
       req.session.displayName = user.displayName;
       return req.session.save(()=>{
          res.redirect('/welcome');
@@ -74,10 +86,12 @@ app.get('/welcome', (req,res) => {
 })
 
 app.post('/auth/register', (req, res) => {
+  let salt = makeSalt();
   users.push({
     'username':req.body.username,
-    'password':req.body.password,
-    'displayName':req.body.displayName
+    'password':sha256(req.body.password + salt),
+    'displayName':req.body.displayName,
+    'salt':salt
   })
   req.session.displayName = req.body.displayName;
   req.session.save(()=>{
