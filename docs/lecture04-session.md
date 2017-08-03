@@ -53,3 +53,31 @@ app.use(session({
 두번째 줄 코드를 추가하여 session 모듈과 FileStore 모듈의 의존성을 설정해준다.<br>
 그리고 session 옵션에 store: new FileStore()를 추가해준다.<br>
 이렇게 설정하면 사용자 세션 정보를 메모리에 저장하지 않고 **"sessions"** 라는 폴더를 자동 생성하여 이 폴더에 저장한다.
+
+## 4. mySQL DB에 세션 저장
+1\) express-mysql-session 모듈 설치<br>
+```
+$ npm install express-mysql-session --save
+```
+
+2\) 서버 설정<br>
+```javascript
+const session = require('express-session')
+const MySQLStore = require('express-mysql-session')(session);
+app.use(session({
+  secret: 'kdasjf093j9qf03jf',
+  resave: false,
+  saveUninitialized: true,
+  store: new MySQLStore({
+      host: 'localhost',
+      port: 3306,
+      user: 'root',
+      password: '111111',
+      database: 'o2'
+  })
+}))
+```
+서버설정은 **3.서버 Storage에 세션 저장**에서 설정한 것과 거의 동일하다.<br>
+단지, mySQL에 접속하기 위한 **option을 필수적으로 추가**해야 한다는 것이 다를뿐.<br>
+위와 같이 설정한 뒤, 서버를 실행하면 mySQL DB('o2')에 session 테이블이 자동으로 생성된다.<br>
+그리고, 웹페이지를 로드하여 서버와 통신하면 DB session 테이블에 세션정보가 저장된다.
