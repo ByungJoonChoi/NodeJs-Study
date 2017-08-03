@@ -33,3 +33,23 @@ secret: 쿠키에서와 마찬가지로 암호화할 때 사용하는 키<br>
 session 모듈을 사용하면 req.session을 통해 세션정보에 접근할 수 있다. <br>
 예를 들어 session에 count라는 정보를 저장하고 싶으면, req.session.count = 1 처럼 작성하면 된다.<br>
 
+## 3. 서버 Storage에 세션 저장
+1\) session-file-store 설치<br>
+서버 Storage에 세션을 저장하기 위해서 session-file-store 모듈을 설치한다.<br>
+```
+$ npm install session-file-store --save
+```
+2\) 서버 설정
+```javascript
+const session = require('express-session')
+const FileStore = require('session-file-store')(session); // 모듈 의존성 설정
+app.use(session({
+  secret: 'kdasjf093j9qf03jf',
+  resave: false,
+  saveUninitialized: true,
+  store: new FileStore()
+}))
+```
+두번째 줄 코드를 추가하여 session 모듈과 FileStore 모듈의 의존성을 설정해준다.<br>
+그리고 session 옵션에 store: new FileStore()를 추가해준다.<br>
+이렇게 설정하면 사용자 세션 정보를 메모리에 저장하지 않고 **"sessions"** 라는 폴더를 자동 생성하여 이 폴더에 저장한다.
