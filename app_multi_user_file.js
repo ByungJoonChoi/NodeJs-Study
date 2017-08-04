@@ -3,6 +3,8 @@ const session = require('express-session')
 const FileStore = require('session-file-store')(session);
 const bodyParser = require('body-parser')
 const sha256 = require('sha256');
+const bkfd2Password = require("pbkdf2-password");
+const hasher = bkfd2Password();
 const app = express();
 app.use(session({
   secret: 'kdasjf093j9qf03jf',
@@ -34,9 +36,9 @@ app.get('/auth/login', (req, res) => {
 let users = [
   {
     username:'peter',
-    password:'9e50affe4d3889511e99311a3f432eb1b788c21e019b760f0fd7f6fd67839045',
+    password:'72RFGsoQCbT+7qBDtskR9CrcDfF4g4Pde2R9ughcqjlKSXufdhgWvgMIBYyh4XLG8SnOAun+s7wF7QmZ29CHrofMCxiIhOclxRlXztphg4pAJpizW7kh9CNZ/ASdjosSlO/POQF7pcTfSF/HaySPjJwdJGD3LTPbE5OFmC58KpE=',
     displayName:'BJ Choi',
-    salt:"(*&^%$#@!~!@#$%^&*()_+)"
+    salt:"k5i+KUCCD8UZd8Xh1PjHB/2frrTemhfG90wlKj2KqbdFbT/Kcjcr/Z1mLJKk8n/RtHbPnOxjcJOkgJ9EpU9pqA=="
   }
 ];
 
@@ -55,10 +57,19 @@ app.post('/auth/login', (req, res) => {
   let pwd = req.body.password;
   for(let i=0 ; i<users.length; i++){
     let user = users[i];
-    if(user.username === uname && user.password === sha256(pwd+user.salt)){
-      req.session.displayName = user.displayName;
-      return req.session.save(()=>{
-         res.redirect('/welcome');
+    if(user.username === uname){
+      return hasher({password:pwd, salt:user.salt}, (err, pass, salt, hash) => {
+        if(user.password === hash){
+          req.session.displayName = user.displayName;
+          req.session.save(()=>{
+            res.redirect('/welcome');
+          });
+        } else {
+          delete req.session.displayName;
+          req.session.save(()=>{
+            res.send('Who are you? <a href="/auth/login">login</a>');
+          });
+        }
       });
     }
   }
