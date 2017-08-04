@@ -52,9 +52,11 @@ passport.deserializeUser(function(id, done) {
   for(let i=0 ; i<users.length; i++){
     let user = users[i]
     if(user.username == id){
-      return done(null, user);
+      return done(null, user); // 이 코드가 실행되면서 req.user 객체가 만들어진다.
     }
   }
+  console.log("식별자에 해당하는 사용자가 없음");
+  return done(null, null); // 세션에 식별자는 있는데 해당하는 사용자가 없는 경우 여기서 done을 해주지 않으면 계속 기다린다. done을 해줘야 라우터의 익명함수를 실행하는 것 같다. 그리고, 이때 세션에 있던 식별자를 지운다.
 });
 
 passport.use(new LocalStrategy(
@@ -89,37 +91,16 @@ app.post(
   )
 );
 
-// app.post('/auth/login', (req, res) => {
-//   let uname = req.body.username;
-//   let pwd = req.body.password;
-//   for(let i=0 ; i<users.length; i++){
-//     let user = users[i];
-//     if(user.username === uname){
-//       return hasher({password:pwd, salt:user.salt}, (err, pass, salt, hash) => {
-//         if(user.password === hash){
-//           req.session.displayName = user.displayName;
-//           req.session.save(()=>{
-//             res.redirect('/welcome');
-//           });
-//         } else {
-//           delete req.session.displayName;
-//           req.session.save(()=>{
-//             res.send('Who are you? <a href="/auth/login">login</a>');
-//           });
-//         }
-//       });
-//     }
-//   }
-//   delete req.session.displayName;
-//   req.session.save(()=>{
-//     res.send('Who are you? <a href="/auth/login">login</a>');
-//   });
-// });
-
+/* 내부 프로세스 :
+1. 세션에서 "passport":{"user":[식별자]} 부분에 식별자 확인
+2-a. [식별자]가 존재하지 않으면 (보통 "passport":{} 상태인 경우임) 라우터 두번째 인자인 익명함수(req,res)를 바로 실행
+2-b. [식별자]가 존재하는 경우 deserializeUser 콜백이 실행되어 [식별자]로부터 user를 식별하여 req.user객체에 저장함.
+3. 익명함수(req,res)를 실행함. 이때 req.user로 해당 user 정보에 접근할 수 있음.
+*/
 app.get('/welcome', (req,res) => {
-  if(req.session.displayName){
+  if(req.user && req.user.displayName){
     res.send(`
-      <h1>Hello, ${req.session.displayName}</h1>
+      <h1>Hello, ${req.user.displayName}</h1>
       <a href="/auth/logout">LogOut</a>
     `);
   } else {
@@ -135,15 +116,18 @@ app.get('/welcome', (req,res) => {
 
 app.post('/auth/register', (req, res) => {
   hasher({password:req.body.password}, (err, pass, salt, hash) => {
-    users.push({
+    let user = {
       'username':req.body.username,
       'password':hash,
       'displayName':req.body.displayName,
       'salt':salt
-    })
-    req.session.displayName = req.body.displayName;
-    req.session.save(()=>{
-      res.redirect('/welcome');
+    };
+    users.push(user);
+    req.login(user, function(){ //serializeUser 콜백함수가 실행되며 done을 하게 되면 여기 익명함수가 콜백된다.
+      console.log("login callback");
+      req.session.save(()=>{
+        res.redirect('/welcome');
+      });
     });
   });
 });
@@ -170,8 +154,10 @@ app.get('/auth/register', (req, res) => {
 });
 
 app.get('/auth/logout', (req, res) => {
-  delete req.session.displayName;
-  res.redirect('/welcome');
+  req.logout(); // 이 코드가 실행되면 세션에 사용자 식별정보를 삭제한다.(세션에 "passport":{}와 같이 user 속성이 사라진다.)
+  req.session.save(()=>{
+    res.redirect('/welcome');
+  });
 });
 
 app.get('/count', (req, res) => {
