@@ -116,9 +116,57 @@ LocalStrategy에서 done(null, user)가 샐행되면 user를 첫번째 인자로
 deserializeUser 콜백함수는 세션정보가 저장되어 있는 사용자가 웹페이지를 로드할 때마다 호출된다.<br>
 이때 id로는 사용자 식별자(여기서는 username)를 전달해준다. 
 
+### 7\) 기본 내부 프로세스
+passport를 사용하면 기본적으로 어떤 라우터로든 요청이 들어올 때 내부적으로 다음과 같은 프로세스가 진행된다.<br>
 
+1\. 세션에 사용자 식별자("passport":{"user":[식별자]})가 있는지를 확인한다.<br>
+2-a\. [식별자]가 존재하지 않으면 (보통 "passport":{} 상태인 경우임) 라우터 두번째 인자인 익명함수(req,res)를 바로 실행<br>
+2-b\. [식별자]가 존재하는 경우 deserializeUser 콜백이 실행되어 [식별자]로부터 user를 식별하여 req.user객체에 저장함.<br>
+3\. 익명함수(req,res)를 실행함. 이때 req.user로 해당 user 정보에 접근할 수 있음.<br>
 
+### 8\) 로그인, 로그아웃
+로그인
+```javascript
+req.login(user, function(){ //serializeUser 콜백함수가 실행되며 done을 하게 되면 여기 익명함수가 콜백된다.
+  console.log("login callback");
+  req.session.save(()=>{
+    res.redirect('/welcome');
+  });
+});
+```
+회원가입 로직에서, user를 DB에 추가한 뒤 **해당 user가 접속중**이라는 정보를 세션에 저장해야 한다.<br>
+이를 위해서 req.login() 메소드를 사용한다. 이 메소드를 호출하면 serializeUser 콜백함수가 실행된다.(이때 세션 정보를 저장한다.)<br>
+serializeUser 콜백함수에서 done을 만나면 다시 req.login()함수의 콜백으로 들어와서 다음 로직을 수행한다.<br><br>
+로그아웃
+```javascript
+app.get('/auth/logout', (req, res) => {
+  req.logout(); // 이 코드가 실행되면 세션에 사용자 식별정보를 삭제한다.
+  req.session.save(()=>{
+    res.redirect('/welcome');
+  });
+});
+```
+로그아웃 로직을 구현하려면 세션 정보에서 **현재 접속중인 사용자 식별 정보를 제거**해야 한다.<br>
+req.logout() 메소드를 호출하면 세션에 저장된 사용자 식별정보를 삭제한다.(세션에 "passport":{}와 같이 user 속성이 사라진다.)<br>
 
-
-
-
+### 9\) deserializeUser 관련 팁
+```javascript
+passport.deserializeUser(function(id, done) {
+  console.log('deserializeUser', id);
+  for(let i=0 ; i<users.length; i++){
+    let user = users[i]
+    if(user.username == id){
+      return done(null, user); // 이 코드가 실행되면서 req.user 객체가 만들어진다.
+    }
+  }
+});
+```
+deserializeUser가 하는 일을 리마인드 해보면,<br> <br>
+세션에 저장된 사용자 식별자(id)로 사용자 DB를 검색하여, <br>
+해당 사용자의 전체 정보를 가지고 있는 user객체를 생성한 뒤, <br>
+req.user 객체에 저장한다. <br><br>
+그런데 세션에 저장된 사용자 식별자에 해당하는 정보가 DB에서 지워진 상황이 있을 수도 있다.(예 : 관리자가 차단하는 경우)<br>
+이런 경우에는 for문을 아무리 돌아도 해당 식별자가 존재하지 않기 때문에 done이 호출되지 않는다.<br>
+(done이 호출되지 않으면 웹페이지를 요청한 라우터의 콜백함수로 넘어가지 않기 때문에 화면은 멈춰있는 상태가 된다.)<br>
+이런 경우를 대응하기 위해 for문 밖에도 done(null, null)을 호출해야 한다.<br>
+(그리고, 이 경우 done(null, null)이 호출되면 세션에 사용자 식별자도 지워진다.)
