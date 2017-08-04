@@ -97,16 +97,17 @@ app.get('/welcome', (req,res) => {
 })
 
 app.post('/auth/register', (req, res) => {
-  let salt = makeSalt();
-  users.push({
-    'username':req.body.username,
-    'password':sha256(req.body.password + salt),
-    'displayName':req.body.displayName,
-    'salt':salt
-  })
-  req.session.displayName = req.body.displayName;
-  req.session.save(()=>{
-    res.redirect('/welcome');
+  hasher({password:req.body.password}, (err, pass, salt, hash) => {
+    users.push({
+      'username':req.body.username,
+      'password':hash,
+      'displayName':req.body.displayName,
+      'salt':salt
+    })
+    req.session.displayName = req.body.displayName;
+    req.session.save(()=>{
+      res.redirect('/welcome');
+    });
   });
 });
 
