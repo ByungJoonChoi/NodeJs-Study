@@ -2,9 +2,10 @@ const express = require('express');
 const session = require('express-session')
 const FileStore = require('session-file-store')(session);
 const bodyParser = require('body-parser')
-const sha256 = require('sha256');
 const bkfd2Password = require("pbkdf2-password");
 const hasher = bkfd2Password();
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
 const app = express();
 app.use(session({
   secret: 'kdasjf093j9qf03jf',
@@ -12,8 +13,8 @@ app.use(session({
   saveUninitialized: true,
   store: new FileStore()
 }))
-// secret : session을 쿠키에 저장할 때 암호화할 때 사용하는 키?
-// session()은 기본적으로 정보를 메모리에 저장
+app.use(passport.initialize());
+app.use(passport.session());  // 이 코드는 위에 app.use(session(){}) 다음에 실행되어야 함
 app.use(bodyParser.urlencoded({extended: false}));
 app.get('/auth/login', (req, res) => {
   var output = `
@@ -41,43 +42,79 @@ let users = [
     salt:"k5i+KUCCD8UZd8Xh1PjHB/2frrTemhfG90wlKj2KqbdFbT/Kcjcr/Z1mLJKk8n/RtHbPnOxjcJOkgJ9EpU9pqA=="
   }
 ];
+passport.serializeUser(function(user, done) {
+  console.log('serializeUser', user);
+  done(null, user.username);
+});
 
-function makeSalt(){
-  let salt = "";
-  let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()_+-=";
-
-  for (let i = 0; i < 30; i++)
-    salt += letters.charAt(Math.floor(Math.random() * letters.length));
-
-  return salt;
-}
-
-app.post('/auth/login', (req, res) => {
-  let uname = req.body.username;
-  let pwd = req.body.password;
+passport.deserializeUser(function(id, done) {
+  console.log('deserializeUser', id);
   for(let i=0 ; i<users.length; i++){
-    let user = users[i];
-    if(user.username === uname){
-      return hasher({password:pwd, salt:user.salt}, (err, pass, salt, hash) => {
-        if(user.password === hash){
-          req.session.displayName = user.displayName;
-          req.session.save(()=>{
-            res.redirect('/welcome');
-          });
-        } else {
-          delete req.session.displayName;
-          req.session.save(()=>{
-            res.send('Who are you? <a href="/auth/login">login</a>');
-          });
-        }
-      });
+    let user = users[i]
+    if(user.username == id){
+      return done(null, user);
     }
   }
-  delete req.session.displayName;
-  req.session.save(()=>{
-    res.send('Who are you? <a href="/auth/login">login</a>');
-  });
 });
+
+passport.use(new LocalStrategy(
+  (username, password, done) => {
+    // 여기부터 developer custom logic
+    let uname = username;
+    let pwd = password;
+    for(let i=0 ; i<users.length; i++){
+      let user = users[i];
+      if(user.username === uname){
+        return hasher({password:pwd, salt:user.salt}, (err, pass, salt, hash) => {
+          if(user.password === hash){
+            done(null, user);
+          } else {
+            done(null, false);
+          }
+        });
+      }
+    }
+    done(null, false);
+  }
+));
+app.post(
+  '/auth/login',
+  passport.authenticate(
+    'local',
+    {
+      successRedirect: '/welcome',
+      failureRedirect: '/auth/login',
+      failureFlash: false // 인증에 실패한 경우 일회성 메시지를 띄워주는 기능
+    }
+  )
+);
+
+// app.post('/auth/login', (req, res) => {
+//   let uname = req.body.username;
+//   let pwd = req.body.password;
+//   for(let i=0 ; i<users.length; i++){
+//     let user = users[i];
+//     if(user.username === uname){
+//       return hasher({password:pwd, salt:user.salt}, (err, pass, salt, hash) => {
+//         if(user.password === hash){
+//           req.session.displayName = user.displayName;
+//           req.session.save(()=>{
+//             res.redirect('/welcome');
+//           });
+//         } else {
+//           delete req.session.displayName;
+//           req.session.save(()=>{
+//             res.send('Who are you? <a href="/auth/login">login</a>');
+//           });
+//         }
+//       });
+//     }
+//   }
+//   delete req.session.displayName;
+//   req.session.save(()=>{
+//     res.send('Who are you? <a href="/auth/login">login</a>');
+//   });
+// });
 
 app.get('/welcome', (req,res) => {
   if(req.session.displayName){
