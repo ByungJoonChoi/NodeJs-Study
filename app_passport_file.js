@@ -85,10 +85,12 @@ passport.use(new LocalStrategy(
 passport.use(new FacebookStrategy({
     clientID: '106437943385750',
     clientSecret: '91040649fff896c7fa1811bc32a9510f',
-    callbackURL: "/auth/facebook/callback"
+    callbackURL: "/auth/facebook/callback",
+    profileFields:['id', 'email', 'gender', 'link', 'locale', 'name', 'timezone', 'updated_time', 'verified', 'displayName']
   },
   function(accessToken, refreshToken, profile, done) {
-    console.log(accessToken, refreshToken, profile);
+    // console.log(accessToken, refreshToken, profile);
+    console.log('email : ' + profile.emails[0].value)
     let authId = "facebook:" + profile.id;
     for(let i=0; i< users.length ; i++){
       let user = users[i];
@@ -122,7 +124,10 @@ app.post(
 app.get(
   '/auth/facebook',
   passport.authenticate(
-    'facebook'
+    'facebook',
+    {
+      scope: 'email'
+    }
   )
 );
 app.get(
