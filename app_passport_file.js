@@ -6,6 +6,7 @@ const bkfd2Password = require("pbkdf2-password");
 const hasher = bkfd2Password();
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+const FacebookStrategy = require('passport-facebook').Strategy;
 const app = express();
 app.use(session({
   secret: 'kdasjf093j9qf03jf',
@@ -30,28 +31,30 @@ app.get('/auth/login', (req, res) => {
       <input type="submit">
     </p>
   </form>
+  <a href="/auth/facebook">facebook</a>
   `;
   res.send(output);
 });
 
 let users = [
   {
+    authId:'local:peter',
     username:'peter',
     password:'72RFGsoQCbT+7qBDtskR9CrcDfF4g4Pde2R9ughcqjlKSXufdhgWvgMIBYyh4XLG8SnOAun+s7wF7QmZ29CHrofMCxiIhOclxRlXztphg4pAJpizW7kh9CNZ/ASdjosSlO/POQF7pcTfSF/HaySPjJwdJGD3LTPbE5OFmC58KpE=',
-    displayName:'BJ Choi',
+    displayName:'Peter Choi',
     salt:"k5i+KUCCD8UZd8Xh1PjHB/2frrTemhfG90wlKj2KqbdFbT/Kcjcr/Z1mLJKk8n/RtHbPnOxjcJOkgJ9EpU9pqA=="
   }
 ];
 passport.serializeUser(function(user, done) {
   console.log('serializeUser', user);
-  done(null, user.username);
+  return done(null, user.authId);
 });
 
 passport.deserializeUser(function(id, done) {
   console.log('deserializeUser', id);
   for(let i=0 ; i<users.length; i++){
     let user = users[i]
-    if(user.username == id){
+    if(user.authId == id){
       return done(null, user); // 이 코드가 실행되면서 req.user 객체가 만들어진다.
     }
   }
@@ -79,6 +82,32 @@ passport.use(new LocalStrategy(
     done(null, false);
   }
 ));
+passport.use(new FacebookStrategy({
+    clientID: '106437943385750',
+    clientSecret: '91040649fff896c7fa1811bc32a9510f',
+    callbackURL: "/auth/facebook/callback"
+  },
+  function(accessToken, refreshToken, profile, done) {
+    console.log(accessToken, refreshToken, profile);
+    let authId = "facebook:" + profile.id;
+    for(let i=0; i< users.length ; i++){
+      let user = users[i];
+      if(user.authId === authId){
+        return done(null, user);
+      }
+    }
+    let newuser = {
+      authId:authId,
+      displayName:profile.displayName
+    };
+    users.push(newuser);
+    done(null, newuser);
+    // User.findOrCreate(..., function(err, user) {
+    //   if (err) { return done(err); }
+      // done(null, user);
+    // });
+  }
+));
 app.post(
   '/auth/login',
   passport.authenticate(
@@ -87,6 +116,22 @@ app.post(
       successRedirect: '/welcome',
       failureRedirect: '/auth/login',
       failureFlash: false // 인증에 실패한 경우 일회성 메시지를 띄워주는 기능
+    }
+  )
+);
+app.get(
+  '/auth/facebook',
+  passport.authenticate(
+    'facebook'
+  )
+);
+app.get(
+  '/auth/facebook/callback',
+  passport.authenticate(
+    'facebook',
+    {
+      successRedirect: '/welcome',
+      failureRedirect: '/auth/login'
     }
   )
 );
@@ -117,6 +162,7 @@ app.get('/welcome', (req,res) => {
 app.post('/auth/register', (req, res) => {
   hasher({password:req.body.password}, (err, pass, salt, hash) => {
     let user = {
+      'authId':'local:'+req.body.username,
       'username':req.body.username,
       'password':hash,
       'displayName':req.body.displayName,
