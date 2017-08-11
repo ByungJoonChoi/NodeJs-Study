@@ -1,6 +1,6 @@
 const express = require('express');
 const session = require('express-session')
-const FileStore = require('session-file-store')(session);
+const MySQLStore = require('express-mysql-session')(session);
 const bodyParser = require('body-parser')
 const bkfd2Password = require("pbkdf2-password");
 const hasher = bkfd2Password();
@@ -12,7 +12,13 @@ app.use(session({
   secret: 'kdasjf093j9qf03jf',
   resave: false,
   saveUninitialized: true,
-  store: new FileStore()
+  store: new MySQLStore({
+      host: 'localhost',
+      port: 3306,
+      user: 'root',
+      password: '111111',
+      database: 'o2'
+  })
 }))
 app.use(passport.initialize());
 app.use(passport.session());  // 이 코드는 위에 app.use(session(){}) 다음에 실행되어야 함
