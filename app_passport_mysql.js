@@ -20,6 +20,15 @@ app.use(session({
       database: 'o2'
   })
 }))
+const mysql      = require('mysql');
+const conn = mysql.createConnection({
+  host     : 'localhost',
+  user     : 'root',
+  password : '111111',
+  database : 'o2'
+});
+conn.connect();
+
 app.use(passport.initialize());
 app.use(passport.session());  // 이 코드는 위에 app.use(session(){}) 다음에 실행되어야 함
 app.use(bodyParser.urlencoded({extended: false}));
@@ -177,14 +186,23 @@ app.post('/auth/register', (req, res) => {
       'username':req.body.username,
       'password':hash,
       'displayName':req.body.displayName,
-      'salt':salt
+      'salt':salt,
+      'email':req.body.username
     };
-    users.push(user);
-    req.login(user, function(){ //serializeUser 콜백함수가 실행되며 done을 하게 되면 여기 익명함수가 콜백된다.
-      console.log("login callback");
-      req.session.save(()=>{
-        res.redirect('/welcome');
-      });
+    let sql = 'INSERT INTO users SET ?';
+    conn.query(sql, user, (err, result, fields) => {
+      if(err){
+        console.log(err);
+        res.status(500).send('Internal Server Error');
+        return;
+      }
+      res.redirect('/welcome');
+      // req.login(user, function(){ //serializeUser 콜백함수가 실행되며 done을 하게 되면 여기 익명함수가 콜백된다.
+      //   console.log("login callback");
+      //   req.session.save(()=>{
+      //     res.redirect('/welcome');
+      //   });
+      // });
     });
   });
 });
