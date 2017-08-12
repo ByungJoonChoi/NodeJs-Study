@@ -107,21 +107,36 @@ passport.use(new FacebookStrategy({
     profileFields:['id', 'email', 'gender', 'link', 'locale', 'name', 'timezone', 'updated_time', 'verified', 'displayName']
   },
   function(accessToken, refreshToken, profile, done) {
-    // console.log(accessToken, refreshToken, profile);
-    console.log('email : ' + profile.emails[0].value)
     let authId = "facebook:" + profile.id;
-    for(let i=0; i< users.length ; i++){
-      let user = users[i];
-      if(user.authId === authId){
-        return done(null, user);
+    let sql = 'SELECT * FROM users WHERE authId=?'
+    conn.query(sql, [authId], (err, results) => {
+      if(err){
+        console.log(err);
+        res.status(500).send('Internal Server Error');
+        return;
       }
-    }
-    let newuser = {
-      authId:authId,
-      displayName:profile.displayName
-    };
-    users.push(newuser);
-    done(null, newuser);
+
+      if(results.length > 0){
+        console.log("login!!")
+        return done(null, results[0]);
+      } else {
+        console.log("have to create user")
+        let newUser = {
+          authId:authId,
+          email:profile.emails[0].value,
+          displayName:profile.displayName
+        }
+        let sql = 'INSERT INTO users SET ?'
+        conn.query(sql, newUser, (err, results) => {
+          if(err){
+            console.log(err);
+            res.status(500).send('Internal Server Error');
+            return;
+          }
+          return done(null, newUser);
+        });
+      }
+    });
   }
 ));
 app.post(
