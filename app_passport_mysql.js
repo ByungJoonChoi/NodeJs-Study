@@ -28,27 +28,13 @@ const conn = mysql.createConnection({
   database : 'o2'
 });
 conn.connect();
-
+app.set('view engine', 'pug');
+app.set('views', './views/mysql');
 app.use(passport.initialize());
 app.use(passport.session());  // 이 코드는 위에 app.use(session(){}) 다음에 실행되어야 함
 app.use(bodyParser.urlencoded({extended: false}));
 app.get('/auth/login', (req, res) => {
-  var output = `
-  <h1>Login</h1>
-  <form action="/auth/login" method="post">
-    <p>
-      <input type="text" name="username" placeholder="username">
-    </p>
-    <p>
-      <input type="password" name="password" placeholder="password">
-    </p>
-    <p>
-      <input type="submit">
-    </p>
-  </form>
-  <a href="/auth/facebook">facebook</a>
-  `;
-  res.send(output);
+  res.render('auth/login');
 });
 
 let users = [
@@ -221,24 +207,7 @@ app.post('/auth/register', (req, res) => {
 });
 
 app.get('/auth/register', (req, res) => {
-  var output = `
-  <h1>Register</h1>
-  <form action="/auth/register" method="post">
-    <p>
-      <input type="text" name="username" placeholder="username">
-    </p>
-    <p>
-      <input type="password" name="password" placeholder="password">
-    </p>
-    <p>
-      <input type="text" name="displayName" placeholder="displayName">
-    </p>
-    <p>
-      <input type="submit">
-    </p>
-  </form>
-  `;
-  res.send(output);
+  res.render('auth/register');
 });
 
 app.get('/auth/logout', (req, res) => {
