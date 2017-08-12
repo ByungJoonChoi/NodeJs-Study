@@ -67,34 +67,37 @@ passport.serializeUser(function(user, done) {
 
 passport.deserializeUser(function(id, done) {
   console.log('deserializeUser', id);
-  for(let i=0 ; i<users.length; i++){
-    let user = users[i]
-    if(user.authId == id){
-      return done(null, user); // 이 코드가 실행되면서 req.user 객체가 만들어진다.
+  let sql = 'SELECT * FROM users WHERE authId=?';
+  conn.query(sql, [id], (err, results) => {
+    if(err){
+      console.log(err);
+      return done(null, false);
     }
-  }
-  console.log("식별자에 해당하는 사용자가 없음");
-  return done(null, null); // 세션에 식별자는 있는데 해당하는 사용자가 없는 경우 여기서 done을 해주지 않으면 계속 기다린다. done을 해줘야 라우터의 익명함수를 실행하는 것 같다. 그리고, 이때 세션에 있던 식별자를 지운다.
+    let user = results[0];
+    if(user.authId == id){
+      return done(null, user);
+    }
+  });
 });
 
 passport.use(new LocalStrategy(
   (username, password, done) => {
     // 여기부터 developer custom logic
-    let uname = username;
-    let pwd = password;
-    for(let i=0 ; i<users.length; i++){
-      let user = users[i];
-      if(user.username === uname){
-        return hasher({password:pwd, salt:user.salt}, (err, pass, salt, hash) => {
-          if(user.password === hash){
-            done(null, user);
-          } else {
-            done(null, false);
-          }
-        });
+    let sql ='SELECT * FROM users WHERE authId=?';
+    conn.query(sql, ['local:' + username], (err, results) => { // fields는 사용안하니 생략했고, rows 보다는 results라는 이름이 적합해 보여서 사용함
+      if(err){
+        console.log(err);
+        return done(null, false);
       }
-    }
-    done(null, false);
+      let user = results[0];
+      hasher({'password':password, 'salt':user.salt}, (err, pass, salt, hash) => {
+        if(user.password === hash){
+          done(null, user);
+        } else {
+          done(null, false);
+        }
+      });
+    });
   }
 ));
 passport.use(new FacebookStrategy({
@@ -119,10 +122,6 @@ passport.use(new FacebookStrategy({
     };
     users.push(newuser);
     done(null, newuser);
-    // User.findOrCreate(..., function(err, user) {
-    //   if (err) { return done(err); }
-      // done(null, user);
-    // });
   }
 ));
 app.post(
@@ -190,19 +189,18 @@ app.post('/auth/register', (req, res) => {
       'email':req.body.username
     };
     let sql = 'INSERT INTO users SET ?';
-    conn.query(sql, user, (err, result, fields) => {
+    conn.query(sql, user, (err, result) => {
       if(err){
         console.log(err);
         res.status(500).send('Internal Server Error');
         return;
       }
-      res.redirect('/welcome');
-      // req.login(user, function(){ //serializeUser 콜백함수가 실행되며 done을 하게 되면 여기 익명함수가 콜백된다.
-      //   console.log("login callback");
-      //   req.session.save(()=>{
-      //     res.redirect('/welcome');
-      //   });
-      // });
+      req.login(user, function(){ //serializeUser 콜백함수가 실행되며 done을 하게 되면 여기 익명함수가 콜백된다.
+        console.log("login callback");
+        req.session.save(()=>{
+          res.redirect('/welcome');
+        });
+      });
     });
   });
 });
