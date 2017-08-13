@@ -23,11 +23,11 @@ conn.connect();
 
 app.locals.pretty = true; // 페이지 소스 보기 할 때 이쁘게 보기!!
 app.set('view engine', 'pug');
-app.set('views', './views_mysql');
+app.set('views', './views/mysql');
 app.use(bodyParser.urlencoded({extended: false}));
 
 app.get('/upload', (req, res) => {
-  res.render('uploadform');
+  res.render('topic/uploadform');
 });
 
 app.post('/upload', upload.single('userfile'), (req, res) => {
@@ -42,7 +42,7 @@ app.get('/topic/add', (req,res) =>{
       res.status(500).send('Internal Server Error');
       return;
     }
-    res.render('add', {topics:topics});
+    res.render('topic/add', {topics:topics});
   });
 });
 
@@ -78,11 +78,11 @@ app.get(['/topic', '/topic/:id'], (req,res) => {
           console.log(err);
           res.status(500).send('Internal Server Error');
         } else {
-          res.render('view', {topics: topics, topic:rows[0]});
+          res.render('topic/view', {topics: topics, topic:rows[0]});
         }
       });
     } else{
-        res.render('view', {topics: topics});
+        res.render('topic/view', {topics: topics});
     }
   });
 });
@@ -107,7 +107,7 @@ app.get('/topic/:id/edit', (req, res) => {
         console.log(err);
         res.status(500).send('Internal Server Error');
       } else {
-        res.render('edit', {topics: topics, topic:rows[0]});
+        res.render('topic/edit', {topics: topics, topic:rows[0]});
       }
     });
   });
@@ -145,7 +145,7 @@ app.get('/topic/:id/delete', (req, res) => {
           console.log("There is no data where id = " + id);
           res.status(500).send('Internal Server Error');
         } else {
-          res.render('delete', {topics:topics, topic:topic[0]});
+          res.render('topic/delete', {topics:topics, topic:topic[0]});
         }
       }
     });
