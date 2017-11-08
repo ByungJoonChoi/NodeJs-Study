@@ -41,6 +41,14 @@ const upload = multer({ storage: storage });
 위와같이 multer의 storage를 설정하면 로컬 저장 폴더, 파일에 대한 naming rule 을 동적으로 설정해줄 수 있다.
 
 
+## 5.multer 메모리에 저장<br>
+
+```javascript
+var storage = multer.memoryStorage()
+var upload = multer({ storage: storage })
+```
+위와 같이 설정하면 서버 로컬 저장소에 파일을 저장하지 않고 메모리로 갖고 있게 된다.
+req.file.buffer를 통해 해당 파일의 buffer에 접근할 수 있다.
 
 
 
